@@ -1,0 +1,10 @@
+{
+  "name": "coresDatagram",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "pokesteve31@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

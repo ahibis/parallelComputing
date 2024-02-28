@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="matrix.js"></script>
+    <title>Мультипоточность</title>
+  </head>
+  <body style="margin-left: 20%">
+    <form id="form">
+      Количество процессоров <br />
+      <input
+        name="cors_count"
+        value="7"
+        type="number"
+        placeholder="Количество процессоров "
+      /><br />
+      Тактов на считывание <br />
+      <input
+        name="read_tacts"
+        value="2"
+        type="number"
+        placeholder="Количество тактов"
+      /><br />
+      Тактов на сложение <br />
+      <input
+        name="add_tacts"
+        value="3"
+        type="number"
+        placeholder="тактов на сложение"
+      /><br />
+      Тактов на умножение <br />
+      <input
+        name="mul_tacts"
+        value="6"
+        type="number"
+        placeholder="тактов на умножение"
+      /><br />
+      Тактов на запись <br />
+      <input
+        name="write_tacts"
+        value="2"
+        type="number"
+        placeholder="тактов на запись"
+      /><br />
+      <button>Просчитать</button>
+    </form>
+    <h3>Как пользоваться</h3>
+    1. Скачиваем решение в формате csv.<br />
+    2. Открываем в ворде.<br />
+    3. Наводим красоту.<br />
+    4. Получаем <br />
+    <img src="./example.jpg" width="500px" />
+
+    <script>
+      function download(text, filename) {
+        var blob = new Blob([text], { type: "text/plain" });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+      }
+      document.getElementById("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const options = Object.fromEntries(formData.entries());
+        for(let option in options){
+          options[option] = Number(options[option])
+        }
+        console.log(options)
+        const res = solve(options)
+        download(res,"решение.csv")
+      });
+    </script>
+  </body>
+</html>
