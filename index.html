@@ -43,15 +43,17 @@
         type="number"
         placeholder="тактов на запись"
       /><br />
-      <button>Просчитать</button>
+      <button name="optimized" value="false">Просчитать</button>
+      <button name="optimized" value="true">Просчитать с оптимизацией</button>
     </form>
     <h3>Как пользоваться</h3>
     1. Вводим исходные данные.<br />
-    2. Скачиваем решение в формате csv.<br />
-    3. Открываем в ворде.<br />
+    2. Нажимаем "просчитать" для обычного решения или "просчитать с оптимизацией" для доп задания.<br />
+    3. Открываем в excel.<br />
     4. Наводим красоту.<br />
     5. Получаем <br />
     <img src="./example.jpg" width="500px" />
+    <a href="https://github.com/ahibis/parallelComputing/blob/main/matrix.ts"> Код программы</a>
 
     <script>
       function download(text, filename) {
@@ -66,12 +68,16 @@
         e.preventDefault();
         const formData = new FormData(e.target);
         const options = Object.fromEntries(formData.entries());
-        for(let option in options){
-          options[option] = Number(options[option])
+        for (let option in options) {
+          options[option] = Number(options[option]);
         }
-        console.log(options)
-        const res = solve(options)
-        download(res,"решение.csv")
+        console.log(e);
+        options[e.submitter.name] = e.submitter.value == "true" ? true : false;
+        console.log(options);
+        // options.optimized = true;
+
+        const res = solve(options);
+        download(res, "решение.csv");
       });
     </script>
   </body>

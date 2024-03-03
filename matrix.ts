@@ -4,9 +4,17 @@ interface Options {
   write_tacts: number;
   add_tacts: number;
   mul_tacts: number;
-};
+  optimized: true;
+}
 
-function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) {
+function solve({
+  cors_count,
+  add_tacts,
+  mul_tacts,
+  read_tacts,
+  write_tacts,
+  optimized,
+}: Options) {
   const CORS_COUNT = cors_count;
   const READ_TACTS = read_tacts;
   const WRITE_TACTS = write_tacts;
@@ -19,6 +27,7 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
 
   class Task {
     tacts: number;
+    priority = 0;
     constructor() {
       this.tacts = 0;
     }
@@ -49,6 +58,7 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
       super();
       this.tacts = READ_TACTS;
       this.out = out;
+      this.priority = 1/READ_TACTS;
     }
     getRes() {
       return this.out;
@@ -68,6 +78,7 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
       this.in1 = in1;
       this.in2 = in2;
       this.out = out;
+      this.priority = -1/ADD_TACTS;
     }
     getRes() {
       return this.out;
@@ -93,6 +104,7 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
       this.in1 = in1;
       this.in2 = in2;
       this.out = out;
+      this.priority = (2/3)/MUL_TACTS;
     }
     getRes() {
       return this.out;
@@ -114,6 +126,7 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
       super();
       this.tacts = WRITE_TACTS;
       this.in1 = in1;
+      this.priority = -1/WRITE_TACTS;
     }
     getRes() {
       return this.in1;
@@ -225,17 +238,61 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
     }
   }
 
-  const readTasks: Task[] = [];
-  const mulTasks: Task[] = [];
-  const addTasks1: Task[] = [];
-  const addTasks2: Task[] = [];
-  const writeTask: Task[] = [];
+  function createBasePlan() {
+    const readTasks: Task[] = [];
+    const mulTasks: Task[] = [];
+    const addTasks1: Task[] = [];
+    const addTasks2: Task[] = [];
+    const writeTask: Task[] = [];
 
-  A.flat().forEach((v) => readTasks.push(new Read(v)));
-  B.flat().forEach((v) => readTasks.push(new Read(v)));
+    A.flat().forEach((v) => readTasks.push(new Read(v)));
+    B.flat().forEach((v) => readTasks.push(new Read(v)));
 
-  for (let row = 0; row < 3; row += 1) {
-    for (let column = 0; column < 3; column += 1) {
+    for (let row = 0; row < 3; row += 1) {
+      for (let column = 0; column < 3; column += 1) {
+        const a1 = A[0][column];
+        const a2 = A[1][column];
+        const a3 = A[2][column];
+        const b1 = B[row][0];
+        const b2 = B[row][1];
+        const b3 = B[row][2];
+
+        const suffix = `${row + 1}${column + 1}`;
+        mulTasks.push(
+          new Mul(a1, b1, `c${suffix}1`),
+          new Mul(a2, b2, `c${suffix}2`),
+          new Mul(a3, b3, `c${suffix}3`)
+        );
+        addTasks1.push(new Add(`c${suffix}1`, `c${suffix}2`, `d${suffix}`));
+        addTasks2.push(new Add(`d${suffix}`, `c${suffix}3`, `e${suffix}`));
+        writeTask.push(new Write(`e${suffix}`));
+      }
+    }
+    return [
+      ...readTasks,
+      ...mulTasks,
+      ...addTasks1,
+      ...addTasks2,
+      ...writeTask,
+    ];
+  }
+
+  function createOptimizedPlan() {
+    const tasks1: Task[] = [];
+    const tasks2: Task[] = [];
+    const bypassPoss: [number, number][] = [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [1, 2],
+      [2, 1],
+      [2, 2],
+    ];
+
+    for (let [row, column] of bypassPoss) {
       const a1 = A[0][column];
       const a2 = A[1][column];
       const a3 = A[2][column];
@@ -244,24 +301,41 @@ function solve({cors_count,add_tacts,mul_tacts,read_tacts,write_tacts}:Options) 
       const b3 = B[row][2];
 
       const suffix = `${row + 1}${column + 1}`;
-      mulTasks.push(
+      tasks1.push(
+        new Read(a1),
+        new Read(b1),
         new Mul(a1, b1, `c${suffix}1`),
+        new Read(a2),
+        new Read(b2),
         new Mul(a2, b2, `c${suffix}2`),
-        new Mul(a3, b3, `c${suffix}3`)
+        new Add(`c${suffix}1`, `c${suffix}2`, `d${suffix}`),
       );
-      addTasks1.push(new Add(`c${suffix}1`, `c${suffix}2`, `d${suffix}`));
-      addTasks2.push(new Add(`d${suffix}`, `c${suffix}3`, `e${suffix}`));
-      writeTask.push(new Write(`e${suffix}`));
+      tasks2.push(
+        new Read(a3),
+        new Read(b3),
+        new Mul(a3, b3, `c${suffix}3`),
+        new Add(`d${suffix}`, `c${suffix}3`, `e${suffix}`),
+        new Write(`e${suffix}`)
+      )
     }
-  }
-  const tasks = [
-    ...readTasks,
-    ...mulTasks,
-    ...addTasks1,
-    ...addTasks2,
-    ...writeTask,
-  ];
+    const tasks = [...tasks1,...tasks2];
+    const usedOperations = new Set<string>();
 
-  const scheduler = new Scheduler(tasks);
+    const tasksFiltered = tasks.filter((task) => {
+      const id = task.toString();
+      if (usedOperations.has(id)) {
+        return false;
+      }
+      usedOperations.add(id);
+      return true;
+    });
+    const tasksPrioritized = tasksFiltered.sort((task1,task2)=>task1.priority-task2.priority)
+
+    return tasksPrioritized;
+  }
+
+  const scheduler = new Scheduler(
+    optimized ? createOptimizedPlan() : createBasePlan()
+  );
   return scheduler.run();
 }
