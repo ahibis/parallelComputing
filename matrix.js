@@ -214,12 +214,12 @@ function solve({ cors_count, add_tacts, mul_tacts, read_tacts, write_tacts, opti
         B.flat().forEach((v) => readTasks.push(new Read(v)));
         for (let row = 0; row < 3; row += 1) {
             for (let column = 0; column < 3; column += 1) {
-                const a1 = A[0][column];
-                const a2 = A[1][column];
-                const a3 = A[2][column];
-                const b1 = B[row][0];
-                const b2 = B[row][1];
-                const b3 = B[row][2];
+                const a1 = A[row][0];
+                const a2 = A[row][1];
+                const a3 = A[row][2];
+                const b1 = B[0][column];
+                const b2 = B[1][column];
+                const b3 = B[2][column];
                 const suffix = `${row + 1}${column + 1}`;
                 mulTasks.push(new Mul(a1, b1, `c${suffix}1`), new Mul(a2, b2, `c${suffix}2`), new Mul(a3, b3, `c${suffix}3`));
                 addTasks1.push(new Add(`c${suffix}1`, `c${suffix}2`, `d${suffix}`));
@@ -250,12 +250,12 @@ function solve({ cors_count, add_tacts, mul_tacts, read_tacts, write_tacts, opti
             [2, 2],
         ];
         for (let [row, column] of bypassPoss) {
-            const a1 = A[0][column];
-            const a2 = A[1][column];
-            const a3 = A[2][column];
-            const b1 = B[row][0];
-            const b2 = B[row][1];
-            const b3 = B[row][2];
+            const a1 = A[row][0];
+            const a2 = A[row][1];
+            const a3 = A[row][2];
+            const b1 = B[0][column];
+            const b2 = B[1][column];
+            const b3 = B[2][column];
             const suffix = `${row + 1}${column + 1}`;
             tasks1.push(new Read(a1), new Read(b1), new Mul(a1, b1, `c${suffix}1`), new Read(a2), new Read(b2), new Mul(a2, b2, `c${suffix}2`), new Add(`c${suffix}1`, `c${suffix}2`, `d${suffix}`));
             tasks2.push(new Read(a3), new Read(b3), new Mul(a3, b3, `c${suffix}3`), new Add(`d${suffix}`, `c${suffix}3`, `e${suffix}`), new Write(`e${suffix}`));

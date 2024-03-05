@@ -250,12 +250,13 @@ function solve({
 
     for (let row = 0; row < 3; row += 1) {
       for (let column = 0; column < 3; column += 1) {
-        const a1 = A[0][column];
-        const a2 = A[1][column];
-        const a3 = A[2][column];
-        const b1 = B[row][0];
-        const b2 = B[row][1];
-        const b3 = B[row][2];
+      const a1 = A[row][0];
+      const a2 = A[row][1];
+      const a3 = A[row][2];
+      const b1 = B[0][column];
+      const b2 = B[1][column];
+      const b3 = B[2][column];
+
 
         const suffix = `${row + 1}${column + 1}`;
         mulTasks.push(
@@ -293,12 +294,12 @@ function solve({
     ];
 
     for (let [row, column] of bypassPoss) {
-      const a1 = A[0][column];
-      const a2 = A[1][column];
-      const a3 = A[2][column];
-      const b1 = B[row][0];
-      const b2 = B[row][1];
-      const b3 = B[row][2];
+      const a1 = A[row][0];
+      const a2 = A[row][1];
+      const a3 = A[row][2];
+      const b1 = B[0][column];
+      const b2 = B[1][column];
+      const b3 = B[2][column];
 
       const suffix = `${row + 1}${column + 1}`;
       tasks1.push(
